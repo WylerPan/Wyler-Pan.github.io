@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>❤️ WylerPan社区 ❤️</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'PingFang SC', 'Helvetica Neue', sans-serif;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+  }
+
+  /* ====== 第一页：邀请码页 ====== */
+  #page1 {
+    position: fixed; inset: 0;
+    background: #FFD700;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    z-index: 10;
+    transition: opacity 1.2s ease;
+  }
+  #page1.fade-out { opacity: 0; pointer-events: none; }
+
+  /* 装饰元素 */
+  .deco {
+    position: absolute;
+    pointer-events: none;
+    user-select: none;
+    animation: floaty 6s ease-in-out infinite;
+  }
+  .deco span { font-size: 28px; }
+  @keyframes floaty {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-18px) rotate(8deg); }
+  }
+
+  .welcome-text {
+    font-size: 26px; font-weight: 700;
+    color: #c0392b;
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 1.2s cubic-bezier(.23,1,.32,1);
+    text-align: center;
+    padding: 0 20px;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  }
+  .welcome-text.show {
+    opacity: 1; transform: translateY(0);
+  }
+
+  .input-area {
+    margin-top: 40px;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 1s cubic-bezier(.23,1,.32,1) 0.6s;
+    display: flex; flex-direction: column; align-items: center;
+  }
+  .input-area.show {
+    opacity: 1; transform: translateY(0);
+  }
+  .input-area input {
+    width: 280px; padding: 14px 20px;
+    border: 2.5px solid #e74c3c;
+    border-radius: 16px;
+    font-size: 17px;
+    text-align: center;
+    outline: none;
+    background: rgba(255,255,255,0.85);
+    color: #333;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+  .input-area input:focus {
+    border-color: #c0392b;
+    box-shadow: 0 0 0 4px rgba(231,76,60,0.18);
+  }
+  .input-area input::placeholder {
+    color: #b0b0b0;
+  }
+  .input-area button {
+    margin-top: 16px;
+    padding: 12px 48px;
+    background: #e74c3c;
+    color: #fff; border: none;
+    border-radius: 14px;
+    font-size: 17px; font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.15s, background 0.2s;
+    letter-spacing: 1px;
+  }
+  .input-area button:active {
+    transform: scale(0.96);
+    background: #c0392b;
+  }
+
+  .hint-text {
+    margin-top: 28px;
+    font-size: 18px; font-weight: 600;
+    color: #b5453a;
+    opacity: 0;
+    transform: translateY(15px);
+    transition: all 1s cubic-bezier(.23,1,.32,1) 1.2s;
+    text-align: center;
+  }
+  .hint-text.show {
+    opacity: 1; transform: translateY(0);
+  }
+
+  /* ====== 灵动岛弹窗 ====== */
+  .dynamic-island {
+    position: fixed;
+    top: 50px; left: 50%;
+    transform: translateX(-50%) translateY(-120px) scale(0.7);
+    background: #1a1a1a;
+    color: #fff;
+    padding: 16px 32px;
+    border-radius: 28px;
+    font-size: 16px; font-weight: 600;
+    opacity: 0;
+    z-index: 999;
+    pointer-events: none;
+    transition: all 0.55s cubic-bezier(.32,.94,.42,1);
+    white-space: nowrap;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.28);
+    text-align: center;
+  }
+  .dynamic-island.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+  .dynamic-island.hide {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-120px) scale(0.7);
+  }
+
+  /* ====== 第二页：加载页 ====== */
+  #page2 {
+    position: fixed; inset: 0;
+    background: #0a0a0a;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    z-index: 20;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 1s ease;
+  }
+  #page2.show { opacity: 1; pointer-events: auto; }
+
+  .loading-text {
+    font-size: 22px; font-weight: 700;
+    color: #00e676;
+    letter-spacing: 1px;
+    min-height: 32px;
+  }
+
+  .success-text {
+    font-size: 22px; font-weight: 700;
+    color: #ff4081;
+    opacity: 0;
+    transform: translateY(15px);
+    transition: all 0.8s cubic-bezier(.23,1,.32,1);
+    letter-spacing: 1px;
+  }
+  .success-text.show {
+    opacity: 1; transform: translateY(0);
+  }
+
+  /* 勾号动画 */
+  .check-container {
+    width: 90px; height: 90px;
+    margin-bottom: 30px;
+    position: relative;
+  }
+  .check-circle {
+    width: 90px; height: 90px;
+    border-radius: 50%;
+    border: 5px solid #00e676;
+    position: absolute;
+    top: 0; left: 0;
+    clip-path: polygon(0 0, 0 0, 0 0, 0 0);
+    animation: circleReveal 0.6s ease forwards;
+  }
+  @keyframes circleReveal {
+    0%   { clip-path: polygon(50% 0%, 50% 0%, 50% 50%, 50% 50%); }
+    25%  { clip-path: polygon(50% 0%, 100% 0%, 100% 50%, 50% 50%); }
+    50%  { clip-path: polygon(50% 0%, 100% 0%, 100% 100%, 50% 50%); }
+    75%  { clip-path: polygon(50% 0%, 100% 0%, 100% 100%, 0% 100%); }
+    100% { clip-path: polygon(50% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 0%); }
+  }
+  .check-mark {
+    position: absolute;
+    top: 18px; left: 14px;
+    width: 55px; height: 40px;
+  }
+  .check-mark polyline {
+    stroke: #00e676;
+    stroke-width: 5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    fill: none;
+    stroke-dasharray: 80;
+    stroke-dashoffset: 80;
+    animation: drawCheck 0.4s ease 0.5s forwards;
+  }
+  @keyframes drawCheck {
+    to { stroke-dashoffset: 0; }
+  }
+
+  /* ====== 第三页：最终页 ====== */
+  #page3 {
+    position: fixed; inset: 0;
+    background: #000;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    z-index: 30;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 1.5s ease;
+  }
+  #page3.show { opacity: 1; pointer-events: auto; }
+
+  .final-lines {
+    text-align: center;
+    line-height: 2.2;
+  }
+  .final-lines p {
+    font-size: 24px;
+    font-weight: 700;
+    color: #fff;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 1s cubic-bezier(.23,1,.32,1);
+  }
+  .final-lines p.show {
+    opacity: 1; transform: translateY(0);
+  }
+
+  /* ====== 淡出覆盖 ====== */
+  .fade-overlay {
+    position: fixed; inset: 0;
+    background: #000;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 25;
+    transition: opacity 2s ease;
+  }
+  .fade-overlay.show { opacity: 1; }
+
+  /* 按钮涟漪 */
+  .ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.3);
+    transform: scale(0);
+    animation: rippleAnim 0.5s ease-out;
+    pointer-events: none;
+  }
+  @keyframes rippleAnim {
+    to { transform: scale(4); opacity: 0; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ====== Page 1: 邀请码 ====== -->
+<div id="page1">
+  <!-- 装饰 -->
+  <div class="deco" style="top:8%;left:10%;animation-delay:0s"><span>❤️</span></div>
+  <div class="deco" style="top:12%;right:12%;animation-delay:1s"><span>💛</span></div>
+  <div class="deco" style="top:25%;left:5%;animation-delay:2s"><span>💕</span></div>
+  <div class="deco" style="top:30%;right:8%;animation-delay:0.5s"><span>✨</span></div>
+  <div class="deco" style="bottom:25%;left:12%;animation-delay:1.5s"><span>🔥</span></div>
+  <div class="deco" style="bottom:20%;right:10%;animation-delay:2.5s"><span>💖</span></div>
+  <div class="deco" style="bottom:35%;left:8%;animation-delay:3s"><span>🌟</span></div>
+  <div class="deco" style="top:18%;left:40%;animation-delay:0.8s"><span>💝</span></div>
+  <div class="deco" style="bottom:15%;right:25%;animation-delay:1.8s"><span>❤️‍🔥</span></div>
+  <div class="deco" style="top:40%;left:15%;animation-delay:3.5s"><span>💗</span></div>
+  <div class="deco" style="bottom:40%;right:15%;animation-delay:0.3s"><span>🧡</span></div>
+
+  <div class="welcome-text" id="welcome">❤️欢迎来到WylerPan社区❤️</div>
+
+  <div class="input-area" id="inputArea">
+    <input type="text" id="codeInput" placeholder="请输入邀请码" autocomplete="off" autocorrect="off" spellcheck="false">
+    <button id="submitBtn" onclick="checkCode()">确 认</button>
+  </div>
+
+  <div class="hint-text" id="hint">❤️请主人输入您的邀请码❤️</div>
+</div>
+
+<!-- ====== 灵动岛弹窗 ====== -->
+<div class="dynamic-island" id="dynamicIsland"></div>
+
+<!-- ====== Page 2: 加载 ====== -->
+<div id="page2">
+  <div class="check-container" id="checkContainer" style="display:none">
+    <div class="check-circle"></div>
+    <svg class="check-mark" viewBox="0 0 55 40">
+      <polyline points="5,22 22,35 50,5"/>
+    </svg>
+  </div>
+  <div class="loading-text" id="loadingText"></div>
+  <div class="success-text" id="successText">❤️已找到最佳路线❤️</div>
+</div>
+
+<!-- ====== 淡出层 ====== -->
+<div class="fade-overlay" id="fadeOverlay"></div>
+
+<!-- ====== Page 3: 最终 ====== -->
+<div id="page3">
+  <div class="final-lines">
+    <p id="final1">臭东子被骗了😂😂</p>
+    <p id="final2" style="margin-top:16px">CBY:气不气</p>
+  </div>
+</div>
+
+<script>
+  /* ====== 音效 ====== */
+  const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  let audioCtx;
+  function ensureAudio() {
+    if (!audioCtx) audioCtx = new AudioCtx();
+    return audioCtx;
+  }
+
+  function playErrorSound() {
+    const ctx = ensureAudio();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(200, ctx.currentTime);
+    osc.frequency.linearRampToValueAtTime(120, ctx.currentTime + 0.18);
+    gain.gain.setValueAtTime(0.18, ctx.currentTime);
+    gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.25);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.25);
+  }
+
+  function playSuccessSound() {
+    const ctx = ensureAudio();
+    const notes = [523, 659, 784];
+    notes.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      const t = ctx.currentTime + i * 0.15;
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(0.15, t + 0.04);
+      gain.gain.linearRampToValueAtTime(0, t + 0.3);
+      osc.start(t);
+      osc.stop(t + 0.3);
+    });
+  }
+
+  /* ====== 震动 ====== */
+  function vibrate() {
+    if (navigator.vibrate) navigator.vibrate([80, 40, 80]);
+  }
+
+  /* ====== 入场动画 ====== */
+  setTimeout(() => document.getElementById('welcome').classList.add('show'), 600);
+  setTimeout(() => document.getElementById('inputArea').classList.add('show'), 1600);
+  setTimeout(() => document.getElementById('hint').classList.add('show'), 2200);
+
+  /* Enter 键提交 */
+  document.getElementById('codeInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') checkCode();
+  });
+
+  /* ====== 邀请码校验 ====== */
+  function checkCode() {
+    const input = document.getElementById('codeInput').value.replace(/\s/g, '');
+    const island = document.getElementById('dynamicIsland');
+
+    if (input === 'WylerPan368429') {
+      // 正确 → 进入加载页
+      document.getElementById('page1').classList.add('fade-out');
+      setTimeout(() => {
+        document.getElementById('page1').style.display = 'none';
+        startLoading();
+      }, 1200);
+    } else {
+      // 错误 → 灵动岛 + 震动 + 音效
+      const msg = Math.random() < 0.5
+        ? '❤️并没有这个邀请码哦❤️'
+        : '❤️该邀请码已被其他主人使用❤️';
+
+      island.textContent = msg;
+      island.className = 'dynamic-island show';
+      vibrate();
+      playErrorSound();
+
+      setTimeout(() => {
+        island.classList.remove('show');
+        island.classList.add('hide');
+        setTimeout(() => { island.className = 'dynamic-island'; }, 600);
+      }, 2200);
+    }
+  }
+
+  /* ====== 加载页逻辑 ====== */
+  function startLoading() {
+    const page2 = document.getElementById('page2');
+    const loadingText = document.getElementById('loadingText');
+    page2.classList.add('show');
+
+    // 打点动画：1点 → 3点，每次循环 2.5s
+    let dotCount = 1;
+    const base = '正在为你寻找最合适的路线';
+    loadingText.textContent = base + '.';
+
+    const dotInterval = setInterval(() => {
+      dotCount++;
+      if (dotCount > 3) dotCount = 1;
+      loadingText.textContent = base + '.'.repeat(dotCount);
+    }, 2500 / 3);
+
+    // 5秒后切换到成功
+    setTimeout(() => {
+      clearInterval(dotInterval);
+
+      playSuccessSound();
+
+      loadingText.style.display = 'none';
+      const checkContainer = document.getElementById('checkContainer');
+      checkContainer.style.display = 'block';
+
+      const successText = document.getElementById('successText');
+      setTimeout(() => successText.classList.add('show'), 200);
+
+      // 淡出 → 最终页
+      setTimeout(() => {
+        document.getElementById('fadeOverlay').classList.add('show');
+        setTimeout(() => {
+          page2.style.display = 'none';
+          showFinal();
+        }, 2000);
+      }, 2800);
+    }, 5000);
+  }
+
+  /* ====== 最终页 ====== */
+  function showFinal() {
+    const page3 = document.getElementById('page3');
+    page3.classList.add('show');
+    document.getElementById('fadeOverlay').classList.remove('show');
+
+    setTimeout(() => document.getElementById('final1').classList.add('show'), 600);
+    setTimeout(() => document.getElementById('final2').classList.add('show'), 1800);
+  }
+</script>
+</body>
+</html>
